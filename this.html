@@ -44,7 +44,11 @@
                             <div class="rank">{{ challenge.challengee_id }}</div>
                             <div class="name">{{ challenge.status }}</div>
                             {% if challenges.winner_id != None %}
-                                <div class="score">{{ challenge.winner_id }}</div>
+                                <a href="versus_stats.html">
+                                    <div class="score">
+                                        <u>{{ challenge.winner_id }}</u>
+                                    </div>
+                                </a>
                             {% endif %}
                             {% if challenge.status == 'accepted' and not challenge.challenger_finished %}
                                 <form method="post" action="/play_challenge">
@@ -75,7 +79,11 @@
                                 <div class="rank">{{ challenge.challenger_id }}</div>
                                 <div class="name">{{ challenge.status }}</div>
                                 {% if challenges.winner_id != None %}
-                                <div class="score">{{ challenge.winner_id }}</div>
+                                <a href="versus_stats.html">
+                                    <div class="score">
+                                        <u>{{ challenge.winner_id }}</u>
+                                    </div>
+                                </a>
                                 {% endif %}
                                 {% if challenge.status == 'accepted' and not challenge.challengee_finished %}
                                     <form method="post" action="/play_challenge">
