@@ -374,8 +374,11 @@ def play_button():
         return flask.redirect(flask.url_for('requests'))
     elif status is False:
         challenges_database.update_playbutton_status(challenge_id, user)
-        return flask.redirect(flask.url_for('start_challenge', challenge_id=challenge_id))
+        flask.session['challenge_id'] = challenge_id
+        return flask.redirect(flask.url_for('play_button2'))
     elif status is True:
+        for i in range(5):
+            versus_database.update_versus_pic_status(challenge_id, user, i+1)
         challenges_database.update_finish_status(challenge_id, user)
         status = challenges_database.check_finish_status(challenge_id)
         if status['status'] == "finished":
@@ -386,19 +389,28 @@ def play_button():
             return flask.redirect(flask.url_for('requests'))
 
 #-----------------------------------------------------------------------
+@app.route ('/play_button2', methods=['GET'])
+def play_button2():
+    return next_challenge()
 
-#
-@app.route('/start_challenge', methods=['GET'])
-def start_challenge():
-    challenge_id = flask.request.args.get('challenge_id')
-    if challenge_id is None:
-        return flask.redirect(flask.url_for('requests')) 
+@app.route('/next_challenge', methods=['POST'])
+def next_challenge():
+    challenge_id = flask.session.get('challenge_id')
+    print("Past Challenge ID")
+    print(challenge_id)
+    index = flask.request.form.get('index')
+    if index is None:
+        index = 0
+    print("Past Index")
+    print(index)
+    return start_challenge(challenge_id, index)
 
-    index = int(flask.request.args.get('index', 0))
+@app.route('/start_challenge', methods=['GET', 'POST'])
+def start_challenge(challenge_id=None, index=None):
     versusList = challenges_database.get_random_versus(challenge_id)
     if versusList is None:
         return flask.redirect(flask.url_for('requests'))  
-
+    index = int(index)
     if index < len(versusList):
         link = pictures_database.get_pic_info("link", versusList[index])
         html_code = flask.render_template('versusgame.html', challenge_id=challenge_id, index=index, link=link)

@@ -516,15 +516,104 @@ def get_playbutton_status(challenge_id, user_id):
         print(f"Error: {error}")
         return "database error"
     
+def update_user_index(challenge_id, user_id, index):
+    conn = None
+    try:
+        with psycopg2.connect(DATABASE_URL) as conn:
+            with conn.cursor() as cur:
+                
+                # First, determine if the user is the challenger or the challengee for this challenge
+                cur.execute('''
+                    SELECT challenger_id, challengee_id
+                    FROM challenges
+                    WHERE id = %s;
+                ''', (challenge_id,))
+                
+                result = cur.fetchone()
+                if result is None:
+                    print("Challenge not found.")
+                    return
+                
+                challenger_id, challengee_id = result
+                
+                # Depending on whether the user is the challenger or the challengee,
+                # update the corresponding finished column in the matches table
+                if user_id == challenger_id:
+                    cur.execute('''
+                        UPDATE challenges
+                        SET index = %s
+                        WHERE id = %s;
+                    ''', (index, challenge_id))
+                elif user_id == challengee_id:
+                    cur.execute('''
+                        UPDATE challenges
+                        SET index2 = %s
+                        WHERE id = %s;
+                    ''', (index, challenge_id))
+                else:
+                    print("User is not part of this challenge.")
+                    return
+                
+                conn.commit()
+                print("Play button status updated successfully.")
+    except (Exception, psycopg2.DatabaseError) as error:
+        print(f"Error: {error}")
+        return "database error"
+
+def get_user_index(challenge_id, user_id):
+    conn = None
+    try:
+        with psycopg2.connect(DATABASE_URL) as conn:
+            with conn.cursor() as cur:
+                
+                # First, determine if the user is the challenger or the challengee for this challenge
+                cur.execute('''
+                    SELECT challenger_id, challengee_id
+                    FROM challenges
+                    WHERE id = %s;
+                ''', (challenge_id,))
+                
+                result = cur.fetchone()
+                if result is None:
+                    print("Challenge not found.")
+                    return
+                
+                challenger_id, challengee_id = result
+                
+                # Depending on whether the user is the challenger or the challengee,
+                # update the corresponding finished column in the matches table
+                if user_id == challenger_id:
+                    cur.execute('''
+                        SELECT index
+                        FROM challenges
+                        WHERE id = %s;
+                    ''', (challenge_id,))
+                elif user_id == challengee_id:
+                    cur.execute('''
+                        SELECT index2
+                        FROM challenges
+                        WHERE id = %s;
+                    ''', (challenge_id,))
+                else:
+                    print("User is not part of this challenge.")
+                    return
+                
+                result = cur.fetchone()
+                if result is not None:
+                    return result[0]
+                else:
+                    print("No results found.")
+                    return None
+    except (Exception, psycopg2.DatabaseError) as error:
+        print(f"Error: {error}")
+        return "database error"
+    
 #-----------------------------------------------------------------------
 
 def main():
     #clear_challenges_table()
     #reset_challenges_id_sequence()
     print()
-    create_challenge('asdf', 'jy3107')
-    create_challenge('c', 'cl7359')
-    update_finish_status(1, 'c')
 
 #-----------------------------------------------------------------------
     
