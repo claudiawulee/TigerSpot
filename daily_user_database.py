@@ -6,7 +6,8 @@ import psycopg2
 
 #-----------------------------------------------------------------------
 
-DATABASE_URL = 'postgresql://tigerspot_database_user:uzR6eRWos4EgeX39bk3kAY7akdrfmV2O@dpg-cre8kjbgbbvc73bos7v0-a.ohio-postgres.render.com/tigerspot_database'
+DATABASE_URL = 'postgresql://tigerspot_database_990e_user:s5cZDU5NrHEaLniMWf2C4L2kzOIxigFZ@dpg-cruv9ig8fa8c73cobdog-a.ohio-postgres.render.com/tigerspot_database_990e'
+# DATABASE_URL = 'postgresql://tigerspot_database_user:uzR6eRWos4EgeX39bk3kAY7akdrfmV2O@dpg-cre8kjbgbbvc73bos7v0-a.ohio-postgres.render.com/tigerspot_database'
 
 #-----------------------------------------------------------------------
 
@@ -341,6 +342,7 @@ def remove_daily_user(username):
 #-----------------------------------------------------------------------
 
 def main():
+    create_daily_user_table()
     print(get_daily_top_players())
     print(insert_player_daily('test'))
     print(update_player_daily('test', 1000, 3))
@@ -359,6 +361,8 @@ def main():
     print(get_daily_top_players())
     print(remove_daily_user('test'))
     print(get_daily_top_players())
+    
+    # print("test")
 
 #-----------------------------------------------------------------------
 

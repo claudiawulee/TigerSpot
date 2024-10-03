@@ -12,7 +12,8 @@ import pytz
 
 #-----------------------------------------------------------------------
 
-DATABASE_URL = 'postgresql://tigerspot_database_user:uzR6eRWos4EgeX39bk3kAY7akdrfmV2O@dpg-cre8kjbgbbvc73bos7v0-a.ohio-postgres.render.com/tigerspot_database'
+DATABASE_URL = 'postgresql://tigerspot_database_990e_user:s5cZDU5NrHEaLniMWf2C4L2kzOIxigFZ@dpg-cruv9ig8fa8c73cobdog-a.ohio-postgres.render.com/tigerspot_database_990e'
+# DATABASE_URL = 'postgresql://tigerspot_database_user:uzR6eRWos4EgeX39bk3kAY7akdrfmV2O@dpg-cre8kjbgbbvc73bos7v0-a.ohio-postgres.render.com/tigerspot_database'
 
 #-----------------------------------------------------------------------
 
@@ -127,7 +128,7 @@ def get_pic_info(col, id):
 
 def main():
 
-    # create_pic_table()
+    create_pic_table()
 
     current_date = get_current_date()
     today_id = pic_of_day()

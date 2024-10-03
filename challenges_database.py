@@ -9,7 +9,8 @@ import versus_database
 
 #-----------------------------------------------------------------------
 
-DATABASE_URL = 'postgresql://tigerspot_database_user:uzR6eRWos4EgeX39bk3kAY7akdrfmV2O@dpg-cre8kjbgbbvc73bos7v0-a.ohio-postgres.render.com/tigerspot_database'
+DATABASE_URL = 'postgresql://tigerspot_database_990e_user:s5cZDU5NrHEaLniMWf2C4L2kzOIxigFZ@dpg-cruv9ig8fa8c73cobdog-a.ohio-postgres.render.com/tigerspot_database_990e'
+# DATABASE_URL = 'postgresql://tigerspot_database_user:uzR6eRWos4EgeX39bk3kAY7akdrfmV2O@dpg-cre8kjbgbbvc73bos7v0-a.ohio-postgres.render.com/tigerspot_database'
 
 #-----------------------------------------------------------------------
 
@@ -22,7 +23,18 @@ def create_challenges_table():
                 id SERIAL PRIMARY KEY,
                 challenger_id VARCHAR(255),
                 challengee_id VARCHAR(255),
-                status VARCHAR(50));''')
+                status VARCHAR(255),
+                challenger_finished BOOL DEFAULT FALSE,
+                challengee_finished BOOL DEFAULT FALSE,
+                challenger_points INT,
+                challengee_points INT,
+                versuslist INT[5] DEFAULT '{0, 0, 0, 0, 0}',
+                challenger_bool BOOL[5] DEFAULT '{FALSE, FALSE, FALSE, FALSE, FALSE}',
+                challengee_bool BOOL[5] DEFAULT '{FALSE, FALSE, FALSE, FALSE, FALSE}',
+                challenger_pic_points INT[5] DEFAULT '{0, 0, 0, 0, 0}',
+                challengee_pic_points INT[5] DEFAULT '{0, 0, 0, 0, 0}',
+                playger_button_status BOOL DEFAULT FALSE,
+                playgee_button_status BOOL DEFAULT FALSE);''')
                 conn.commit()
     
     except (Exception, psycopg2.DatabaseError) as error:
@@ -501,22 +513,38 @@ def main():
 
     # Testing
     print('Testing')
-    #print(create_challenge('123', '456'))
-    #print(create_challenge('abc', 'def'))
-    #print(accept_challenge('1'))
-    #print(decline_challenge('2'))
-    #print(get_user_challenges('abc'))
-    #print(update_finish_status('1', '123'))
-    #print(check_finish_status('1'))
-    #print(get_challenge_participants('1'))
-    #print(get_challenge_results('1'))
-    #print(create_random_versus())
-    #print(get_random_versus('1'))
-    #print(update_playbutton_status('1', '123'))
-    #print(get_playbutton_status('1', '123'))
-    #print(clear_user_challenges('123'))
-    #print(clear_user_challenges('abc'))
-    #print(clear_challenges_table())
+    print(create_challenges_table())
+    # print(clear_user_challenges())
+
+    print(create_challenge('123', '456'))
+    print(create_challenge('abc', 'def'))
+    print(accept_challenge('1'))
+    print(decline_challenge('2'))
+    print(get_user_challenges('abc'))
+    print(update_finish_status('1', '123'))
+    print(check_finish_status('1'))
+    print(get_challenge_participants('1'))
+    print(get_challenge_results('1'))
+    print(create_random_versus())
+    print(get_random_versus('1'))
+    print(update_playbutton_status('1', '123'))
+    print(get_playbutton_status('1', '123'))
+    print(clear_user_challenges('123'))
+    print(clear_user_challenges('abc'))
+    print(clear_challenges_table())
+    # try:
+    #     with psycopg2.connect(DATABASE_URL) as conn:
+    #         with conn.cursor() as cur:
+
+    #             # Query to find challenges related to the user_id
+    #             cur.execute("""
+    #             DROP TABLE challenges;
+    #             """)
+    #             conn.commit()  # Commit the transaction to make changes permanent
+    #             return "success"
+    # except (Exception, psycopg2.DatabaseError) as error:
+    #     print(f"Error deleting table")
+    #     return "database error"
 
 #-----------------------------------------------------------------------
     

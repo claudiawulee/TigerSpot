@@ -6,7 +6,8 @@ import psycopg2
 
 #-----------------------------------------------------------------------
 
-DATABASE_URL = 'postgresql://tigerspot_database_user:uzR6eRWos4EgeX39bk3kAY7akdrfmV2O@dpg-cre8kjbgbbvc73bos7v0-a.ohio-postgres.render.com/tigerspot_database'
+DATABASE_URL = 'postgresql://tigerspot_database_990e_user:s5cZDU5NrHEaLniMWf2C4L2kzOIxigFZ@dpg-cruv9ig8fa8c73cobdog-a.ohio-postgres.render.com/tigerspot_database_990e'
+# DATABASE_URL = 'postgresql://tigerspot_database_user:uzR6eRWos4EgeX39bk3kAY7akdrfmV2O@dpg-cre8kjbgbbvc73bos7v0-a.ohio-postgres.render.com/tigerspot_database'
 
 #-----------------------------------------------------------------------
 
@@ -240,12 +241,12 @@ def main():
     
     # Testing
     print('Testing')
-    #print(update_versus_points('1', '123', 100))
-    #print(calculate_versus(2, 1))
-    #print(get_winner('1'))
-    #print(update_versus_pic_status('1', '123', 2))
-    #print(get_versus_pic_status('1', '123', 2))
-    #print(store_versus_pic_points('1', '123', 2, 100))
+    print(update_versus_points('1', '123', 100))
+    print(calculate_versus(2, 1))
+    print(get_winner('1'))
+    print(update_versus_pic_status('1', '123', 2))
+    print(get_versus_pic_status('1', '123', 2))
+    print(store_versus_pic_points('1', '123', 2, 100))
     
 
 #-----------------------------------------------------------------------
