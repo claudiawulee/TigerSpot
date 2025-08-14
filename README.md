@@ -1,6 +1,6 @@
 <div align = "center">
 <h1>
-  <a href= "https://tigerspot.onrender.com">Tiger Spot
+  <a href= "https://spot.tigerapps.org">Tiger Spot
 </h1>
 <p align="center">
   <img src="https://github.com/claudiawulee/TigerSpot/assets/68723604/dbbc795f-0607-400b-9ffb-ba446cdcbeb5" alt="Tiger Spot Logo"/>
