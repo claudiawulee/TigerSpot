@@ -10,6 +10,8 @@ from flask import Flask
 import os
 import dotenv
 from sys import path
+import cloudinary
+import cloudinary.uploader
 
 # Tiger Spot files
 path.append("src")
@@ -31,6 +33,13 @@ import points
 dotenv.load_dotenv()
 app = Flask(__name__, template_folder="./templates", static_folder="./static")
 app.secret_key = os.environ["APP_SECRET_KEY"]
+
+# Configure Cloudinary (for image uploads)
+cloudinary.config(
+    cloud_name=os.environ.get("CLOUDINARY_CLOUD_NAME"),
+    api_key=os.environ.get("CLOUDINARY_API_KEY"),
+    api_secret=os.environ.get("CLOUDINARY_API_SECRET"),
+)
 
 # -----------------------------------------------------------------------
 
@@ -156,6 +165,9 @@ def requests():
 def game():
 
     id = pictures_database.pic_of_day()
+    if id == "database error":
+        html_code = flask.render_template("contact_admin.html")
+        return flask.make_response(html_code)
 
     username = auth.authenticate()
 
@@ -198,6 +210,9 @@ def game():
 @app.route("/submit", methods=["POST"])
 def submit():
     id = pictures_database.pic_of_day()
+    if id == "database error":
+        html_code = flask.render_template("contact_admin.html")
+        return flask.make_response(html_code)
     username = auth.authenticate()
 
     user_played = daily_user_database.player_played(username)
@@ -775,6 +790,114 @@ def submit2():
 # -----------------------------------------------------------------------
 
 
+# Admin guard for JSON APIs
+def admin_required(fn):
+    def wrapper(*args, **kwargs):
+        # Follow existing auth pattern: let CAS handle redirects if unauthenticated
+        username = auth.authenticate()
+
+        if not user_database.is_admin(username):
+            return (
+                flask.jsonify({"error": {"message": "Forbidden: Admins only"}}),
+                403,
+            )
+
+        return fn(*args, **kwargs)
+
+    # Preserve function name for Flask routing
+    wrapper.__name__ = fn.__name__
+    return wrapper
+
+
+# -----------------------------------------------------------------------
+
+
+# Admin-only API to upload an image with location data
+@app.route("/api/images", methods=["POST"])
+@admin_required
+def upload_image():
+    # Validate form fields
+    if "file" not in flask.request.files:
+        return (
+            flask.jsonify({"error": {"message": "Missing file in request"}}),
+            400,
+        )
+    file = flask.request.files["file"]
+    place = flask.request.form.get("place")
+    lat_raw = flask.request.form.get("latitude")
+    lon_raw = flask.request.form.get("longitude")
+
+    if not file or file.filename == "":
+        return (
+            flask.jsonify({"error": {"message": "Empty or missing file"}}),
+            400,
+        )
+    if not place or lat_raw is None or lon_raw is None:
+        return (
+            flask.jsonify(
+                {
+                    "error": {
+                        "message": "Missing required fields: place, latitude, longitude",
+                    }
+                }
+            ),
+            400,
+        )
+
+    # Parse coordinates
+    try:
+        lat = float(lat_raw)
+        lon = float(lon_raw)
+    except ValueError:
+        return (
+            flask.jsonify({"error": {"message": "Invalid latitude/longitude"}}),
+            400,
+        )
+    if not (-90.0 <= lat <= 90.0 and -180.0 <= lon <= 180.0):
+        return (
+            flask.jsonify({"error": {"message": "Latitude/longitude out of range"}}),
+            400,
+        )
+
+    # Upload to Cloudinary (use existing folder convention)
+    try:
+        upload_result = cloudinary.uploader.upload(
+            file,
+            folder="TigerSpot/Checked",
+            context={"Latitude": str(lat), "Longitude": str(lon), "Place": place},
+        )
+    except Exception as ex:
+        return (
+            flask.jsonify({"error": {"message": f"Upload failed: {str(ex)}"}}),
+            502,
+        )
+
+    link = upload_result.get("url") or upload_result.get("secure_url")
+    if not link:
+        return (
+            flask.jsonify({"error": {"message": "Upload missing URL"}}),
+            502,
+        )
+
+    # Persist to DB with contiguous pictureid (works for both providers)
+    created = pictures_database.create_picture([lat, lon], link, place)
+    if created == "database error":
+        return (
+            flask.jsonify({"error": {"message": "Database insert failed"}}),
+            500,
+        )
+
+    response = {
+        "id": created["pictureid"],
+        "link": created["link"],
+        "place": created["place"],
+        "coordinates": created["coordinates"],
+    }
+    return flask.jsonify(response), 201
+
+
+# -----------------------------------------------------------------------
+
 # Displays the results of a versus mode game
 @app.route("/versus_stats", methods=["POST"])
 def versus_stats():
@@ -796,17 +919,3 @@ def versus_stats():
 
 
 # -----------------------------------------------------------------------
-
-
-@app.route("/health", methods=["GET"])
-def health_check():
-    try:
-        with get_session() as session:
-            session.execute("SELECT 1")
-        return "OK", 200
-    except Exception as e:
-        return f"Database connection error: {e}", 500
-
-
-if __name__ == "__main__":
-    app.run(host="localhost", port=3000)

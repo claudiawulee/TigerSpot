@@ -5,10 +5,9 @@
 import datetime
 
 import pytz
-from sqlalchemy import func
-
 from src.db import get_session
 from src.models import Picture
+from sqlalchemy import func
 
 # -----------------------------------------------------------------------
 
@@ -55,6 +54,9 @@ def pic_of_day():
     except Exception as error:
         print(error)
         return 1
+    # Guard against empty table to avoid modulo by zero
+    if not picture_count or int(picture_count) == 0:
+        return "database error"
 
     picture_id = (day_of_year - 1) % picture_count + 1
     return picture_id
@@ -74,6 +76,41 @@ def get_pic_info(col, id):
 
             # Return the requested column
             return getattr(picture, col)
+
+    except Exception as error:
+        print(error)
+        return "database error"
+
+
+# -----------------------------------------------------------------------
+
+def create_picture(coordinates, link, place):
+    """
+    Create a new picture row assigning the next contiguous pictureid.
+    Returns a dict with the created picture fields on success,
+    or "database error" on failure.
+    """
+    try:
+        with get_session() as session:
+            # Determine next id (contiguous allocation)
+            current_max = session.query(func.max(Picture.pictureid)).scalar()
+            next_id = 1 if current_max is None else int(current_max) + 1
+
+            new_picture = Picture(
+                pictureid=next_id,
+                coordinates=coordinates,
+                link=link,
+                place=place,
+            )
+            session.add(new_picture)
+
+            # Build return value
+            return {
+                "pictureid": next_id,
+                "coordinates": coordinates,
+                "link": link,
+                "place": place,
+            }
 
     except Exception as error:
         print(error)

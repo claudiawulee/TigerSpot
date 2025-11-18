@@ -66,6 +66,51 @@ alembic upgrade head
 
 Run the development server with `python3 dev.py`. You can access the web app at `http://localhost:5173`.
 
+### Admin Image Upload API
+
+This API allows admins to upload an image with associated location data. Images are stored in Cloudinary under the folder `TigerSpot/Checked`, consistent with the existing seeding flow.
+
+1) Add the `admin` column and migrate the database (first time only):
+
+```bash
+alembic upgrade head
+```
+
+If you pulled or created a migration for the `admin` column, ensure it is applied. To promote a user to admin:
+
+```sql
+UPDATE users SET admin = TRUE WHERE username = 'your_netid';
+```
+
+2) Ensure Cloudinary env vars are set in `.env` (see `.env.example`).
+
+3) Upload an image (admin only) via curl:
+
+```bash
+curl -X POST \
+  -F "file=@/absolute/path/to/image.jpg" \
+  -F "place=Frist Campus Center" \
+  -F "latitude=40.349" \
+  -F "longitude=-74.660" \
+  http://localhost:5173/api/images
+```
+
+Response example:
+
+```json
+{
+  "id": 42,
+  "link": "http://res.cloudinary.com/.../image/upload/v.../tigerspot.jpg",
+  "place": "Frist Campus Center",
+  "coordinates": [40.349, -74.66]
+}
+```
+
+Notes:
+- New uploads are immediately eligible for daily rotation. Rotation uses the total count of pictures and contiguous `pictureid` assignment.
+- The API sets Cloudinary `context` metadata (`Latitude`, `Longitude`, `Place`) to match the seeding script conventions.
+- If moderation is needed later, add an `approved` column to `pictures` and change the daily selection to filter on approved images.
+
 ## License
 
 This project is licensed under the BSD 3-Clause License - see the [LICENSE](LICENSE) file for details.

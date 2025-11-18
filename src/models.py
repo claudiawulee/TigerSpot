@@ -18,6 +18,7 @@ class User(Base):
 
     username = Column(String(255), primary_key=True)
     points = Column(Integer, default=0)
+    admin = Column(Boolean, default=False)
 
     def __repr__(self):
         return f"<User(username={self.username}, points={self.points})>"
